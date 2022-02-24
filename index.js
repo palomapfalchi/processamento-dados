@@ -1,4 +1,6 @@
 
+//METODO UTILIZANDO STREAM PAUSE/RESUME
+
 //importar biblioteca mysql2
 const mysql = require("mysql2");
 const { connected } = require("process");
@@ -11,7 +13,7 @@ var connection = mysql.createConnection({
     database: "employees"
 }); 
 
-//callback informando se teve erro a conexão com a base de dados
+// TESTA CONEXÃO - callback informando se teve erro a conexão com a base de dados
 connection.connect( (err)=> {
     if (err) {
         throw err;
@@ -22,13 +24,17 @@ connection.connect( (err)=> {
 
 //funcao que atualiza dados do empregado
 const processRow = (row, callback) => {
-    console.log(row);
+    
+    var sql = mysql.format('UPDATE employees SET full_name = CONCAT(?, " ", ?) WHERE emp_no = ?', [row['first_name'], row['last_name'], row['emp_no']]);
+    connection.query(sql);
+
     callback();
 }
 
 //buscar dados dos empregados
-var query = connection.query("SELECT emp_no, first_name, last_name FROM employees.employees LIMIT 10");
+var query = connection.query("SELECT emp_no, first_name, last_name FROM employees.employees LIMIT 100");
 
+// a cada linha buscada, para a conexão e processa(atualiza) a linha
 query.on("error", () => {
     console.error(err);
 }) //buffer
@@ -41,7 +47,7 @@ query.on("error", () => {
         connection.resume();
     });
 
-})
+}) //finalizando
 .on("end", () => {
     console.log("Sucesso!");
     connection.end();
